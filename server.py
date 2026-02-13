@@ -12,8 +12,6 @@ Session(server)
 
 @server.route("/")
 def index():
-    if not session.get("name"):
-        session.name = "request.remote_addr"
     return render_template('index.html')
 
 @server.route('/', methods=['GET', 'POST'])
@@ -32,3 +30,10 @@ def upload_file():
         filename = secure_filename(file.filename)
         file.save(os.path.join(server.root_path, 'uploads', filename))
         return redirect(url_for('upload_file', name=filename))
+
+@server.route("/download")
+def download():
+    filename = "count"
+    file_path = os.path.join(server.root_path, 'uploads')
+
+    return send_from_directory(file_path, filename, as_attachment=True)
