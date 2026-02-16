@@ -11,5 +11,11 @@
         <input type="file" id="file-input" name="file"> 
         <input type="submit" value="Submit">
     </form>
+    <select name="devices" id="devices">
+        {%for device in devices %}
+        <option value="{{device}}">{{device}}</option>
+        {%endfor%}
+    </select>
+    <p>{{session_id}}</p>
 </body>
 </html>

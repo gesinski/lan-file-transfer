@@ -1,18 +1,24 @@
 import os
 from flask import Flask, render_template, request, redirect, flash, url_for, session, send_from_directory
-from flask_session import Session
 from werkzeug.utils import secure_filename
-from datetime import timedelta
 
 server = Flask(__name__)
 
-server.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=5)
-server.config["SESSION_TYPE"] = "filesystem" 
-Session(server)
+server.secret_key = os.urandom(24)
+devices = []
 
 @server.route("/")
 def index():
-    return render_template('index.html')
+    if 'device' not in session:
+        session['device'] = os.urandom(10).hex()
+        session['joined'] = True
+
+    if session['device'] not in devices:
+        devices.append(session['device'])
+    
+    session_id = f"Session ID: {session['device']}"
+
+    return render_template('index.html', session_id=session_id, devices=devices)
 
 @server.route('/', methods=['GET', 'POST'])
 def upload_file():
