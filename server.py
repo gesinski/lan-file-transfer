@@ -16,9 +16,10 @@ def index():
     if session['device'] not in devices:
         devices.append(session['device'])
     
-    session_id = f"Session ID: {session['device']}"
+    device_num = f"You are on device number: {devices.index(session['device'])}"
 
-    return render_template('index.html', session_id=session_id, devices=devices)
+    enum_devices = list(enumerate(devices))
+    return render_template('index.html', device_num=device_num, devices=enum_devices)
 
 @server.route('/', methods=['GET', 'POST'])
 def upload_file():

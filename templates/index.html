@@ -3,19 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="/static/css/style.css" rel="stylesheet">
     <link rel="icon" type="image/x-icon" href="../static/images/icon.png">
 </head>
 <body>
-    <form method="post" enctype="multipart/form-data">
-        <label for="file-input">Select a file:</label>
-        <input type="file" id="file-input" name="file"> 
-        <input type="submit" value="Submit">
-    </form>
-    <select name="devices" id="devices">
-        {%for device in devices %}
-        <option value="{{device}}">{{device}}</option>
-        {%endfor%}
-    </select>
-    <p>{{session_id}}</p>
+    <div class="container">
+        <form method="post" enctype="multipart/form-data">
+            <label for="file-input">Select a file:</label>
+            <input type="file" id="file-input" name="file"> 
+            <input type="submit" value="Submit">
+        </form>
+        <select name="devices" id="devices" onchange="javashitfunction">
+            {%for i, device in devices: %}
+            <option value="device">device {{ i }}</option>
+            {%endfor%}
+        </select>
+        <p>{{device_num}}</p>
+    </div>
 </body>
 </html>
