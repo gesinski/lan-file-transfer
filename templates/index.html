@@ -11,13 +11,13 @@
         <form method="post" enctype="multipart/form-data">
             <label for="file-input">Select a file:</label>
             <input type="file" id="file-input" name="file"> 
+            <select name="devices" id="devices" onchange="javashitfunction">
+                {%for i, device in devices: %}
+                <option value="device{{i}}">device {{i}}</option>
+                {%endfor%}
+            </select>
             <input type="submit" value="Submit">
         </form>
-        <select name="devices" id="devices" onchange="javashitfunction">
-            {%for i, device in devices: %}
-            <option value="device">device {{ i }}</option>
-            {%endfor%}
-        </select>
         <p>{{device_num}}</p>
     </div>
 </body>

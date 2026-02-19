@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, request, redirect, flash, url_for, session, send_from_directory
+from flask import Flask, render_template, request, redirect, flash, url_for, session, send_from_directory, jsonify
 from werkzeug.utils import secure_filename
 
 server = Flask(__name__)
@@ -29,6 +29,7 @@ def upload_file():
             return redirect(request.url)
         
         file = request.files['file']
+        reciever_device = request.form.get('devices')
 
         if file.filename == '':
             flash('No selected file')
@@ -36,11 +37,10 @@ def upload_file():
         
         filename = secure_filename(file.filename)
         file.save(os.path.join(server.root_path, 'uploads', filename))
-        return redirect(url_for('upload_file', name=filename))
+        return redirect(url_for('upload_file', filename=filename, reciever=reciever_device))
 
 @server.route("/download")
-def download():
-    filename = "count"
+def download(filename):
     file_path = os.path.join(server.root_path, 'uploads')
 
     return send_from_directory(file_path, filename, as_attachment=True)
