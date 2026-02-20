@@ -5,7 +5,12 @@ from werkzeug.utils import secure_filename
 server = Flask(__name__)
 
 server.secret_key = os.urandom(24)
+
+UPLOAD_DIR = os.path.join(server.root_path, "uploads")
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+
 devices = []
+pending_files = {}
 
 @server.route("/")
 def index():
@@ -16,31 +21,55 @@ def index():
     if session['device'] not in devices:
         devices.append(session['device'])
     
-    device_num = f"You are on device number: {devices.index(session['device'])}"
+    device_index = devices.index(session['device'])
+    device_info = f"You are on device number: {devices.index(session['device'])}"
+
+    pending_files.setdefault(device_index, [])
 
     enum_devices = list(enumerate(devices))
-    return render_template('index.html', device_num=device_num, devices=enum_devices)
+    return render_template('index.html', device_index=device_index, device_num=device_info, devices=enum_devices)
 
-@server.route('/', methods=['GET', 'POST'])
-def upload_file():
+@server.route('/upload', methods=['GET', 'POST'])
+def upload():
     if request.method == 'POST':
         if 'file' not in request.files:
-            flash('No file part')
-            return redirect(request.url)
+            return jsonify(error="no file"), 400
         
         file = request.files['file']
-        reciever_device = request.form.get('devices')
+        receiver_device = int(request.form.get('devices'))
 
         if file.filename == '':
-            flash('No selected file')
-            return redirect(request.url)
+            return jsonify(error="empty filename"), 400
         
         filename = secure_filename(file.filename)
-        file.save(os.path.join(server.root_path, 'uploads', filename))
-        return redirect(url_for('upload_file', filename=filename, reciever=reciever_device))
+        file.save(os.path.join(UPLOAD_DIR, filename))
 
-@server.route("/download")
-def download(filename):
-    file_path = os.path.join(server.root_path, 'uploads')
+        pending_files.setdefault(receiver_device, []).append(filename)
 
-    return send_from_directory(file_path, filename, as_attachment=True)
+        return jsonify(ok=True)
+
+@server.route("/inbox")
+def inbox():
+    if "device" not in session:
+        return jsonify([])
+    
+    device_index = devices.index(session["device"])
+    files = pending_files.get(device_index, [])
+    return jsonify([{"name": f, "sender": device_index} for f in files])
+
+@server.route("/download/<int:receiver>/<filename>")
+def download(receiver, filename):
+    if "device" not in session:
+        return redirect(url_for("index"))
+
+    device_index = devices.index(session["device"])
+
+    if device_index != receiver:
+        return redirect(url_for("index"))
+
+    if filename not in pending_files.get(receiver, []):
+        return redirect(url_for("index"))
+
+    pending_files[receiver].remove(filename)
+
+    return send_from_directory(UPLOAD_DIR, filename, as_attachment=True)
