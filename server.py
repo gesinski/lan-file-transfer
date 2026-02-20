@@ -48,6 +48,10 @@ def upload():
 
         return jsonify(ok=True)
 
+@server.route("/devices")
+def devices_list():
+    return jsonify([{"index": i, "name": f"device {i}"} for i in range(len(devices))])
+
 @server.route("/inbox")
 def inbox():
     if "device" not in session:
